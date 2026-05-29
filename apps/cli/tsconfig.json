@@ -1,0 +1,9 @@
+{
+  "extends": "@cc-sync/config/tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun", "node"],
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}

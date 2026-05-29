@@ -1,0 +1,29 @@
+{
+  "name": "ccsync",
+  "version": "0.1.0",
+  "private": true,
+  "bin": {
+    "ccsync": "./src/index.ts"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "start": "bun run src/index.ts",
+    "build": "rm -rf dist && bun build src/index.ts --target=bun --outdir=dist --entry-naming=ccsync --packages=external",
+    "check-types": "tsc --noEmit",
+    "test": "bun test --max-concurrency=1"
+  },
+  "dependencies": {
+    "@cc-sync/backend": "workspace:*",
+    "@opentui/core": "^0.3.0",
+    "@opentui/react": "^0.3.0",
+    "convex": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@cc-sync/config": "workspace:*",
+    "@types/bun": "^1.3.6",
+    "@types/node": "^24.3.0",
+    "typescript": "catalog:"
+  }
+}

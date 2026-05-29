@@ -1,0 +1,3 @@
+{
+  "extends": "@cc-sync/config/tsconfig.base.json"
+}

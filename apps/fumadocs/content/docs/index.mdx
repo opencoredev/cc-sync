@@ -1,0 +1,29 @@
+---
+title: ccsync
+description: Sync global AI agent skills and MCP server config across your machines.
+icon: Rocket
+---
+
+ccsync keeps user-level AI agent setup aligned across devices. It scans supported agent harnesses, stores a small account-scoped manifest, and applies the latest custom skills and MCP definitions on each machine.
+
+## Quick Start
+
+```bash
+bun install
+bun run cli:build
+ccsync init
+ccsync daemon start
+```
+
+## What Syncs
+
+| Surface         | Behavior                                                     |
+| --------------- | ------------------------------------------------------------ |
+| Registry skills | Stored as lightweight references.                            |
+| Custom skills   | File contents sync when explicitly marked custom.            |
+| MCP servers     | Known global config files are merged per agent.              |
+| Devices         | Registered per account with sync health and latest activity. |
+
+## Safety Model
+
+Project-level config is intentionally ignored. Pulled custom skill files are confined to known agent skill roots, MCP writes are confined to known user-level config files, and redacted secret values are not written back onto another device.
