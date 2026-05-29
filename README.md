@@ -93,8 +93,8 @@ GITHUB_CLIENT_SECRET=...
 Set web env vars in `apps/web/.env`:
 
 ```txt
-VITE_CONVEX_URL=...
-VITE_CONVEX_SITE_URL=...
+VITE_CONVEX_URL=https://elated-rat-35.convex.cloud
+VITE_CONVEX_SITE_URL=https://elated-rat-35.convex.site
 ```
 
 Then run the web app and backend when developing:

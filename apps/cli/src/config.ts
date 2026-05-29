@@ -15,7 +15,7 @@ export const STATE_PATH = join(CONFIG_DIR, "state.json");
 export const DEFAULT_DEBOUNCE_MS = 20_000;
 export const DEFAULT_POLL_MS = 60_000;
 export const CCSYNC_VERSION = "0.1.0";
-export const DEFAULT_CONVEX_URL = "https://nautical-shrimp-417.convex.cloud";
+export const DEFAULT_CONVEX_URL = "https://elated-rat-35.convex.cloud";
 export const DEFAULT_SITE_URL = "https://cc-sync.dev";
 
 export async function loadConfig(): Promise<CcSyncConfig> {

@@ -1,5 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Copy, KeyRound, Monitor } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  Copy,
+  Download,
+  KeyRound,
+  Monitor,
+  Terminal,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import { useState } from "react";
 
 import { api } from "@cc-sync/backend/convex/_generated/api";
@@ -10,21 +20,27 @@ import { useMutation, useQuery } from "convex/react";
 
 import { authClient } from "@/lib/auth-client";
 
-const DOCS_URL = "https://cc-sync.dev/docs";
 const HOMEBREW_INSTALL_COMMAND = `brew tap opencoredev/cc-sync https://github.com/opencoredev/cc-sync
 brew install --HEAD opencoredev/cc-sync/ccsync`;
 const START_COMMANDS = `ccsync init
 ccsync daemon start`;
 
 export const Route = createFileRoute("/")({
+  validateSearch: (search): { error?: string; error_description?: string } => ({
+    error: typeof search.error === "string" ? search.error : undefined,
+    error_description:
+      typeof search.error_description === "string" ? search.error_description : undefined,
+  }),
   component: HomeComponent,
 });
 
 function HomeComponent() {
   const session = authClient.useSession();
+  const search = Route.useSearch();
   const [label, setLabel] = useState("Main laptop");
   const [issuedToken, setIssuedToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedCommand, setCopiedCommand] = useState<"install" | "start" | null>(null);
   const issueCliToken = useMutation(api.sync.issueCliToken);
   const tokens = useQuery(api.sync.listCliTokens, session.data ? {} : "skip");
   const devices = useQuery(api.sync.listDevices, session.data ? {} : "skip");
@@ -35,7 +51,7 @@ function HomeComponent() {
   async function signIn(provider: "github" | "vercel") {
     await authClient.signIn.social({
       provider,
-      callbackURL: "/",
+      callbackURL: getCallbackUrl(),
     });
   }
 
@@ -61,26 +77,18 @@ function HomeComponent() {
     setCopied(true);
   }
 
+  async function copyCommand(value: string, key: "install" | "start") {
+    await navigator.clipboard.writeText(value);
+    setCopiedCommand(key);
+  }
+
   return (
     <main className="cc-page-frame min-h-svh bg-background text-foreground">
-      <div className="cc-auth-stage mx-auto flex min-h-svh w-full max-w-5xl items-center justify-center px-5 py-8 sm:px-8">
-        <section className="cc-auth-panel w-full max-w-[440px] rounded-xl border bg-card/96 shadow-sm">
-          <div className="border-b px-5 py-4 sm:px-6">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold tracking-normal">ccsync</p>
-                <p className="mt-1 text-xs text-muted-foreground">Agent settings sync</p>
-              </div>
-              <div className="cc-terminal-dot-row" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </div>
-            </div>
-          </div>
-
+      <div className="cc-auth-stage mx-auto flex min-h-svh w-full items-center justify-center px-5 py-8 sm:px-8">
+        <section className="cc-auth-panel w-full max-w-[420px] border bg-card/95 shadow-xl">
           {session.data ? (
             <SignedInPanel
+              copiedCommand={copiedCommand}
               copied={copied}
               deviceCount={deviceCount}
               issuedToken={issuedToken}
@@ -89,12 +97,14 @@ function HomeComponent() {
               signOut={signOut}
               createToken={createToken}
               copyToken={copyToken}
+              copyCommand={copyCommand}
               tokenCount={tokenCount}
               userLabel={session.data.user.name ?? session.data.user.email ?? "Signed in"}
             />
           ) : (
             <SignedOutPanel
-              providers={providers ?? { github: true, vercel: false }}
+              authError={formatAuthError(search.error ?? search.error_description)}
+              providers={providers ?? { github: false, vercel: false }}
               signIn={signIn}
             />
           )}
@@ -105,72 +115,72 @@ function HomeComponent() {
 }
 
 function SignedOutPanel({
+  authError,
   providers,
   signIn,
 }: {
+  authError?: string;
   providers: { github: boolean; vercel: boolean };
   signIn: (provider: "github" | "vercel") => Promise<void>;
 }) {
+  const hasProvider = providers.github || providers.vercel;
+
   return (
-    <div className="space-y-6 px-5 py-6 sm:px-6">
-      <div className="space-y-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-background">
+    <div className="space-y-6 px-6 py-8 sm:px-8">
+      <div className="space-y-3 text-center">
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-md border bg-background text-foreground shadow-sm">
           <KeyRound className="h-5 w-5" aria-hidden="true" />
         </div>
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-normal">Sign in to ccsync</h1>
-          <p className="max-w-sm text-sm leading-6 text-muted-foreground">
-            Create a CLI token and keep your agent skills, MCPs, and device settings in sync.
+          <h1 className="text-[1.65rem] font-semibold tracking-normal">Sign in to ccsync</h1>
+          <p className="mx-auto max-w-[24rem] text-sm leading-6 text-muted-foreground">
+            Create a CLI token for your synced agent setup.
           </p>
         </div>
       </div>
 
-      <div className="grid gap-2.5">
+      {authError ? (
+        <div className="cc-auth-error flex gap-2 rounded-md border px-3 py-2.5 text-xs leading-5">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          <span>{authError}</span>
+        </div>
+      ) : null}
+
+      <div className="grid gap-2">
         <Button
-          className="cc-provider-button h-11 justify-start gap-3"
+          className="cc-provider-button h-10 justify-center gap-2 rounded-md text-sm"
           disabled={!providers.github}
           onClick={() => signIn("github")}
         >
           <GithubLogo className="h-[18px] w-[18px]" />
-          Continue with GitHub
+          {providers.github ? "Continue with GitHub" : "GitHub OAuth not configured"}
         </Button>
-        <Button
-          className="cc-provider-button h-11 justify-start gap-3"
-          variant="outline"
-          disabled={!providers.vercel}
-          title={providers.vercel ? undefined : "Vercel OAuth is not configured yet"}
-          onClick={() => signIn("vercel")}
-        >
-          <VercelLogo className="h-[18px] w-[18px]" />
-          Continue with Vercel
-        </Button>
+        {providers.vercel ? (
+          <Button
+            className="cc-provider-button h-10 justify-center gap-2 rounded-md text-sm"
+            variant="outline"
+            onClick={() => signIn("vercel")}
+          >
+            <VercelLogo className="h-[18px] w-[18px]" />
+            Continue with Vercel
+          </Button>
+        ) : null}
       </div>
 
-      <a
-        className="cc-doc-link block rounded-lg border bg-background px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        href={DOCS_URL}
-      >
-        Read the Quick Start before installing
-      </a>
-
-      <div className="cc-auth-notes grid gap-2 border-t pt-4 font-mono text-[11px] leading-5 text-muted-foreground">
-        <p>
-          <span aria-hidden="true">01</span> scan user-level config
+      {!hasProvider ? (
+        <p className="text-center text-xs leading-5 text-muted-foreground">
+          Add production OAuth keys in Convex to enable sign in.
         </p>
-        <p>
-          <span aria-hidden="true">02</span> sync custom skills and MCPs
-        </p>
-        <p>
-          <span aria-hidden="true">03</span> settle conflicts by latest push
-        </p>
-      </div>
+      ) : null}
     </div>
   );
 }
 
 function SignedInPanel({
   copied,
+  copiedCommand,
   createToken,
+  copyCommand,
   copyToken,
   deviceCount,
   issuedToken,
@@ -181,7 +191,9 @@ function SignedInPanel({
   userLabel,
 }: {
   copied: boolean;
+  copiedCommand: "install" | "start" | null;
   createToken: () => Promise<void>;
+  copyCommand: (value: string, key: "install" | "start") => Promise<void>;
   copyToken: () => Promise<void>;
   deviceCount: number;
   issuedToken: string | null;
@@ -192,57 +204,62 @@ function SignedInPanel({
   userLabel: string;
 }) {
   return (
-    <div className="space-y-5 px-5 py-6 sm:px-6">
-      <div className="flex items-start justify-between gap-4">
+    <div className="space-y-5 px-5 py-5 sm:px-6">
+      <div className="flex items-start justify-between gap-4 border-b pb-4">
         <div>
-          <p className="text-sm text-muted-foreground">Signed in as</p>
-          <h2 className="mt-1 text-xl font-semibold tracking-normal">{userLabel}</h2>
+          <p className="text-xs text-muted-foreground">Dashboard</p>
+          <h1 className="mt-1 text-xl font-semibold tracking-normal">ccsync</h1>
         </div>
-        <Button variant="ghost" size="sm" onClick={signOut}>
+        <Button className="rounded-md" variant="ghost" size="sm" onClick={signOut}>
           Sign out
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 text-sm">
-        <div className="rounded-lg border bg-background p-3">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Monitor className="h-4 w-4" aria-hidden="true" />
-            Devices
-          </div>
-          <div className="mt-2 text-2xl font-semibold">{deviceCount}</div>
+      <div className="cc-account-row flex items-center gap-3 rounded-md border bg-background px-3 py-2.5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md border bg-card">
+          <UserRound className="h-4 w-4" aria-hidden="true" />
         </div>
-        <div className="rounded-lg border bg-background p-3">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <KeyRound className="h-4 w-4" aria-hidden="true" />
-            Tokens
-          </div>
-          <div className="mt-2 text-2xl font-semibold">{tokenCount}</div>
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">Signed in as</p>
+          <p className="truncate text-sm font-medium">{userLabel}</p>
         </div>
       </div>
 
-      <div className="space-y-3">
-        <div className="rounded-lg border bg-background">
-          <div className="border-b px-3 py-2 text-sm font-medium">Install with Homebrew</div>
-          <pre className="overflow-x-auto px-3 py-3 font-mono text-xs leading-6 text-muted-foreground">
-            <code>{HOMEBREW_INSTALL_COMMAND}</code>
-          </pre>
-        </div>
+      <div className="cc-status-strip grid grid-cols-2 divide-x rounded-md border bg-background text-sm">
+        <StatusMetric icon={Monitor} label="Devices" value={deviceCount} />
+        <StatusMetric icon={KeyRound} label="Tokens" value={tokenCount} />
+      </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="token-label">Device label</Label>
+      <div className="space-y-3">
+        <CommandBlock
+          command={HOMEBREW_INSTALL_COMMAND}
+          copied={copiedCommand === "install"}
+          icon={Download}
+          label="Install with Homebrew"
+          onCopy={() => copyCommand(HOMEBREW_INSTALL_COMMAND, "install")}
+        />
+
+        <div className="rounded-md border bg-background p-3">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <Label className="text-sm font-medium" htmlFor="token-label">
+              Device label
+            </Label>
+            <span className="text-xs text-muted-foreground">For this token</span>
+          </div>
           <Input
+            className="h-9 rounded-md bg-card text-sm"
             id="token-label"
             value={label}
             onChange={(event) => setLabel(event.currentTarget.value)}
           />
+          <Button className="mt-3 h-10 w-full rounded-md text-sm" onClick={createToken}>
+            Create CLI token
+          </Button>
         </div>
-        <Button className="h-11 w-full" onClick={createToken}>
-          Create CLI token
-        </Button>
       </div>
 
       {issuedToken ? (
-        <div className="rounded-lg border bg-background">
+        <div className="rounded-md border bg-background">
           <div className="flex items-center justify-between border-b px-3 py-2 text-sm">
             <span className="font-medium">New token</span>
             <button
@@ -264,16 +281,73 @@ function SignedInPanel({
         </div>
       ) : null}
 
-      <div className="rounded-lg border bg-background">
-        <div className="border-b px-3 py-2 text-sm font-medium">Start syncing</div>
-        <pre className="overflow-x-auto px-3 py-3 font-mono text-xs leading-6 text-muted-foreground">
-          <code>{START_COMMANDS}</code>
-        </pre>
-      </div>
+      <CommandBlock
+        command={START_COMMANDS}
+        copied={copiedCommand === "start"}
+        icon={Terminal}
+        label="Start syncing"
+        onCopy={() => copyCommand(START_COMMANDS, "start")}
+      />
+    </div>
+  );
+}
 
-      <a className="text-sm text-muted-foreground hover:text-foreground" href={DOCS_URL}>
-        Open setup docs
-      </a>
+function StatusMetric({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="p-3">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Icon className="h-4 w-4" aria-hidden="true" />
+        <span>{label}</span>
+      </div>
+      <div className="mt-2 text-2xl font-semibold">{value}</div>
+    </div>
+  );
+}
+
+function CommandBlock({
+  command,
+  copied,
+  icon: Icon,
+  label,
+  onCopy,
+}: {
+  command: string;
+  copied: boolean;
+  icon: LucideIcon;
+  label: string;
+  onCopy: () => void;
+}) {
+  return (
+    <div className="rounded-md border bg-background">
+      <div className="flex items-center justify-between gap-3 border-b px-3 py-2 text-sm">
+        <div className="flex items-center gap-2 font-medium">
+          <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          {label}
+        </div>
+        <button
+          className="cc-copy inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+          type="button"
+          onClick={onCopy}
+        >
+          {copied ? (
+            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+          )}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <pre className="overflow-x-auto px-3 py-3 font-mono text-xs leading-6 text-muted-foreground">
+        <code>{command}</code>
+      </pre>
     </div>
   );
 }
@@ -307,4 +381,17 @@ function createPlainToken(): string {
 async function sha256(value: string): Promise<string> {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function getCallbackUrl(): string {
+  if (typeof window === "undefined") return "https://cc-sync.dev/";
+  return new URL("/", window.location.origin).toString();
+}
+
+function formatAuthError(error: string | undefined): string | undefined {
+  if (!error) return undefined;
+  if (error === "please_restart_the_process") {
+    return "That OAuth session expired. Start again here and it will use the production app.";
+  }
+  return "Sign-in could not finish. Start again here and ccsync will restart the OAuth flow.";
 }
