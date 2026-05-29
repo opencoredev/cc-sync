@@ -9,7 +9,8 @@ class Ccsync < Formula
   def install
     system "bun", "install", "--frozen-lockfile"
     system "bun", "run", "cli:build"
-    bin.install "apps/cli/dist/ccsync"
+    libexec.install Dir["apps/cli/dist/*"]
+    bin.write_exec_script libexec/"ccsync"
   end
 
   test do

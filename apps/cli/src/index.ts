@@ -3,7 +3,6 @@ import { CcSyncClient } from "./client";
 import { loadConfig, promptForConfig, saveConfig, getDeviceInfo, CONFIG_PATH } from "./config";
 import { runDaemon } from "./daemon";
 import { scanLocalManifest, pullRemoteManifest, pushLocalManifest } from "./sync";
-import { runTui } from "./tui";
 
 const args = process.argv.slice(2);
 
@@ -15,6 +14,7 @@ await main(args).catch((error: unknown) => {
 async function main(argv: string[]): Promise<void> {
   const [command, subcommand, value] = argv;
   if (!command || command === "tui") {
+    const { runTui } = await import("./tui");
     await runTui();
     return;
   }
