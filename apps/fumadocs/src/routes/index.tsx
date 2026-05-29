@@ -13,11 +13,11 @@ function Home() {
       <div className="mx-auto flex max-w-2xl flex-1 flex-col items-center justify-center px-6 text-center">
         <p className="mb-3 text-sm font-medium text-fd-muted-foreground">ccsync docs</p>
         <h1 className="mb-4 text-3xl font-semibold tracking-normal text-fd-foreground">
-          Set up skill and MCP sync without guessing.
+          Quick Start for cross-device agent setup.
         </h1>
         <p className="mb-6 text-sm leading-6 text-fd-muted-foreground">
-          Install the CLI, connect your account, and keep global agent config aligned across
-          machines.
+          Install the Homebrew CLI, sign in with GitHub, create a token, and keep global agent
+          skills and MCP config aligned across machines.
         </p>
         <Link
           to="/docs/$"
@@ -26,7 +26,7 @@ function Home() {
           }}
           className="mx-auto rounded-lg bg-fd-primary px-3 py-2 text-sm font-medium text-fd-primary-foreground transition-colors hover:bg-fd-primary/90"
         >
-          Open Docs
+          Open Quick Start
         </Link>
       </div>
     </HomeLayout>

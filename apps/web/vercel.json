@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/docs",
+      "destination": "https://cc-sync-docs.vercel.app/docs",
+      "permanent": false
+    },
+    {
+      "source": "/docs/:path*",
+      "destination": "https://cc-sync-docs.vercel.app/docs/:path*",
+      "permanent": false
+    }
+  ]
+}

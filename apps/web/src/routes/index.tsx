@@ -10,6 +10,12 @@ import { useMutation, useQuery } from "convex/react";
 
 import { authClient } from "@/lib/auth-client";
 
+const DOCS_URL = "https://cc-sync.dev/docs";
+const HOMEBREW_INSTALL_COMMAND = `brew tap opencoredev/cc-sync https://github.com/opencoredev/cc-sync
+brew install --HEAD opencoredev/cc-sync/ccsync`;
+const START_COMMANDS = `ccsync init
+ccsync daemon start`;
+
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
@@ -140,6 +146,13 @@ function SignedOutPanel({
         </Button>
       </div>
 
+      <a
+        className="cc-doc-link block rounded-lg border bg-background px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        href={DOCS_URL}
+      >
+        Read the Quick Start before installing
+      </a>
+
       <div className="cc-auth-notes grid gap-2 border-t pt-4 font-mono text-[11px] leading-5 text-muted-foreground">
         <p>
           <span aria-hidden="true">01</span> scan user-level config
@@ -208,6 +221,13 @@ function SignedInPanel({
       </div>
 
       <div className="space-y-3">
+        <div className="rounded-lg border bg-background">
+          <div className="border-b px-3 py-2 text-sm font-medium">Install with Homebrew</div>
+          <pre className="overflow-x-auto px-3 py-3 font-mono text-xs leading-6 text-muted-foreground">
+            <code>{HOMEBREW_INSTALL_COMMAND}</code>
+          </pre>
+        </div>
+
         <div className="grid gap-2">
           <Label htmlFor="token-label">Device label</Label>
           <Input
@@ -243,6 +263,17 @@ function SignedInPanel({
           </div>
         </div>
       ) : null}
+
+      <div className="rounded-lg border bg-background">
+        <div className="border-b px-3 py-2 text-sm font-medium">Start syncing</div>
+        <pre className="overflow-x-auto px-3 py-3 font-mono text-xs leading-6 text-muted-foreground">
+          <code>{START_COMMANDS}</code>
+        </pre>
+      </div>
+
+      <a className="text-sm text-muted-foreground hover:text-foreground" href={DOCS_URL}>
+        Open setup docs
+      </a>
     </div>
   );
 }

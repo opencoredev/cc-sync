@@ -1,0 +1,60 @@
+---
+title: CLI Reference
+description: Commands for setup, sync, daemon control, and local inspection.
+icon: SquareTerminal
+---
+
+## Setup
+
+```bash
+ccsync init
+```
+
+Configures the hosted backend, stores the local token hash, registers the device, scans local agent setup, and pushes the first manifest.
+
+## Status
+
+```bash
+ccsync status
+```
+
+Shows device identity, pause state, remote connectivity, detected agents, synced skill counts, MCP server count, and current manifest hash.
+
+## Sync Commands
+
+```bash
+ccsync scan
+ccsync push
+ccsync pull
+```
+
+- `scan` prints the local manifest as JSON.
+- `push` sends the local manifest to the account backend.
+- `pull` applies the latest remote manifest to known local agent paths.
+
+## Daemon
+
+```bash
+ccsync daemon start
+ccsync daemon pause
+ccsync daemon resume
+```
+
+The daemon watches local config paths and polls the backend for remote revisions.
+
+## TUI
+
+```bash
+ccsync
+ccsync tui
+```
+
+Both commands open the OpenTUI console.
+
+## Remove a Device
+
+```bash
+ccsync devices remove <deviceId>
+```
+
+Marks a device removed from the account device list.

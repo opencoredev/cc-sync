@@ -1,0 +1,63 @@
+---
+title: Production Setup
+description: Configure the deployed web app, Convex backend, and OAuth providers.
+icon: Cloud
+---
+
+Use this page when rotating production keys or setting up the hosted deployment from scratch.
+
+## Web Environment
+
+Set these on the `cc-sync-web` Vercel project:
+
+```bash
+vercel env add VITE_CONVEX_URL production --value "https://nautical-shrimp-417.convex.cloud" --yes --cwd apps/web --scope opencoredev
+vercel env add VITE_CONVEX_SITE_URL production --value "https://nautical-shrimp-417.convex.site" --yes --cwd apps/web --scope opencoredev
+```
+
+Redeploy the web app after changing Vercel env vars.
+
+## Convex Environment
+
+Set these on the Convex backend deployment:
+
+```bash
+bunx convex env set SITE_URL https://cc-sync.dev
+bunx convex env set BETTER_AUTH_TRUSTED_ORIGINS https://cc-sync.dev,https://www.cc-sync.dev,https://cc-sync-web.vercel.app
+bunx convex env set GITHUB_CLIENT_ID <github-client-id>
+bunx convex env set GITHUB_CLIENT_SECRET <github-client-secret>
+```
+
+If Vercel OAuth is enabled later, also set:
+
+```bash
+bunx convex env set VERCEL_CLIENT_ID <vercel-client-id>
+bunx convex env set VERCEL_CLIENT_SECRET <vercel-client-secret>
+```
+
+## GitHub OAuth App
+
+Use these production values when creating the GitHub OAuth app:
+
+```txt
+Homepage URL: https://cc-sync.dev
+Authorization callback URL: https://nautical-shrimp-417.convex.site/api/auth/callback/github
+```
+
+The callback URL points at the Convex HTTP action because Better Auth is served from the Convex site deployment.
+
+## Verify
+
+After deploying:
+
+```bash
+curl -I https://cc-sync.dev
+curl -I https://cc-sync.dev/docs
+```
+
+Then open `https://cc-sync.dev`, sign in with GitHub, create a CLI token, and run:
+
+```bash
+ccsync init
+ccsync daemon start
+```

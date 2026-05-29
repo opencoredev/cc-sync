@@ -1,29 +1,48 @@
 ---
-title: ccsync
-description: Sync global AI agent skills and MCP server config across your machines.
-icon: Rocket
+title: Quick Start
+description: Install ccsync with Homebrew, sign in, create a token, and start syncing.
+icon: Terminal
 ---
 
-ccsync keeps user-level AI agent setup aligned across devices. It scans supported agent harnesses, stores a small account-scoped manifest, and applies the latest custom skills and MCP definitions on each machine.
+ccsync keeps user-level AI agent setup aligned across machines. It scans supported agent harnesses, syncs custom skills and MCP server definitions through your account, then applies the latest manifest on each device.
 
 ## Quick Start
 
+Install the Homebrew tap and CLI:
+
 ```bash
-bun install
-bun run cli:build
+brew tap opencoredev/cc-sync https://github.com/opencoredev/cc-sync
+brew install --HEAD opencoredev/cc-sync/ccsync
+```
+
+Open the account page and sign in with GitHub:
+
+```txt
+https://cc-sync.dev
+```
+
+Create a CLI token, then connect the machine:
+
+```bash
 ccsync init
 ccsync daemon start
 ```
 
-## What Syncs
+The CLI has the hosted Convex backend and web account URL baked in, so the normal setup only needs your token and a device label.
 
-| Surface         | Behavior                                                     |
-| --------------- | ------------------------------------------------------------ |
-| Registry skills | Stored as lightweight references.                            |
-| Custom skills   | File contents sync when explicitly marked custom.            |
-| MCP servers     | Known global config files are merged per agent.              |
-| Devices         | Registered per account with sync health and latest activity. |
+## What Happens
 
-## Safety Model
+1. `ccsync init` asks for the CLI token and saves config at `~/.config/ccsync/config.json` with mode `0600`.
+2. The raw CLI token is hashed locally before anything is saved.
+3. The first local manifest is pushed to your account.
+4. `ccsync daemon start` watches supported agent config paths and syncs future changes.
 
-Project-level config is intentionally ignored. Pulled custom skill files are confined to known agent skill roots, MCP writes are confined to known user-level config files, and redacted secret values are not written back onto another device.
+## Next
+
+- <a href="/docs/install">Install</a>: Homebrew install details and upgrade notes.
+- <a href="/docs/account">Account Token</a>: Sign in, create a token, and connect a device.
+- <a href="/docs/sync-model">Sync Model</a>: What ccsync syncs and what it ignores.
+- <a href="/docs/cli">CLI Reference</a>: Commands for status, push, pull, daemon, and TUI.
+- <a href="/docs/safety">Safety</a>: Path limits, token handling, and MCP secret behavior.
+
+Project-level config is intentionally ignored. ccsync only touches known user-level/global agent setup.

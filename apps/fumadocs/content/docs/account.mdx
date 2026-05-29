@@ -1,0 +1,33 @@
+---
+title: Account Token
+description: Sign in with GitHub, create a CLI token, and connect a machine.
+icon: KeyRound
+---
+
+Open the ccsync account page and sign in with GitHub:
+
+```txt
+https://cc-sync.dev
+```
+
+After signing in, create a CLI token for the current machine. Copy the token once; the full token is only shown when it is created.
+
+## Connect a Device
+
+Run:
+
+```bash
+ccsync init
+```
+
+Paste the CLI token when prompted. The CLI saves only the SHA-256 token hash to local config.
+
+The default hosted backend is already configured in the CLI. You can press Enter for the Convex URL and web account URL prompts unless you are using a self-hosted deployment.
+
+## Start Sync
+
+```bash
+ccsync daemon start
+```
+
+The daemon watches supported global agent paths, pushes local changes after a debounce window, and polls for newer remote revisions.

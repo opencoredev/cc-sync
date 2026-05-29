@@ -1,0 +1,34 @@
+---
+title: Install
+description: Install the ccsync CLI with Homebrew.
+icon: Package
+---
+
+ccsync is distributed through Homebrew for now.
+
+```bash
+brew tap opencoredev/cc-sync https://github.com/opencoredev/cc-sync
+brew install --HEAD opencoredev/cc-sync/ccsync
+```
+
+This installs the `ccsync` command and builds the CLI from the current `main` branch. The formula uses Bun to build the CLI bundle.
+
+## Verify
+
+```bash
+ccsync --version
+ccsync --help
+```
+
+## Upgrade
+
+The current formula is HEAD-only. To pull the newest commit:
+
+```bash
+brew update
+brew reinstall --HEAD opencoredev/cc-sync/ccsync
+```
+
+## Requirements
+
+The Homebrew formula installs Bun as a dependency. You do not need to install Node, npm, pnpm, or yarn to use the CLI.

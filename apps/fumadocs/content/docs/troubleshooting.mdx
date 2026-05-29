@@ -1,0 +1,59 @@
+---
+title: Troubleshooting
+description: Diagnose install, token, backend, and sync issues.
+icon: Wrench
+---
+
+## `ccsync init` Cannot Reach the Backend
+
+Check the hosted Convex URL:
+
+```bash
+ccsync status
+```
+
+If you overrode config during setup, remove `~/.config/ccsync/config.json` and rerun:
+
+```bash
+ccsync init
+```
+
+## Token Rejected
+
+Create a new token from the account page:
+
+```txt
+https://cc-sync.dev
+```
+
+Then rerun `ccsync init` and paste the new token.
+
+## No Agents Detected
+
+Run:
+
+```bash
+ccsync scan
+```
+
+ccsync only scans known global/user-level paths for supported agents. Project-local config is ignored.
+
+## Changes Do Not Appear on Another Machine
+
+On the source machine:
+
+```bash
+ccsync push
+```
+
+On the target machine:
+
+```bash
+ccsync pull
+```
+
+If both work, restart the daemon on each machine:
+
+```bash
+ccsync daemon start
+```

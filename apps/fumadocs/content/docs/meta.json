@@ -1,0 +1,16 @@
+{
+  "title": "ccsync",
+  "pages": [
+    "---Getting started---",
+    "index",
+    "install",
+    "account",
+    "---Concepts---",
+    "sync-model",
+    "safety",
+    "---Reference---",
+    "cli",
+    "production",
+    "troubleshooting"
+  ]
+}

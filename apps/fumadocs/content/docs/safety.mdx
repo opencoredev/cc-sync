@@ -1,0 +1,31 @@
+---
+title: Safety
+description: How ccsync limits writes, tokens, secrets, and manifest size.
+icon: ShieldCheck
+---
+
+ccsync is intentionally scoped to user-level agent setup.
+
+## Path Boundaries
+
+Pulled custom skill files are confined to known agent skill directories. A file path that tries to escape the skill root is skipped.
+
+MCP server writes are confined to known user-level MCP config files for each supported agent. Unknown config paths are skipped instead of written.
+
+## Token Handling
+
+The web app shows a raw CLI token only when it is created. The CLI stores a SHA-256 hash of that token at:
+
+```txt
+~/.config/ccsync/config.json
+```
+
+The config file is written with mode `0600`.
+
+## MCP Secrets
+
+Environment values that were redacted during scan are not written back onto another device. ccsync merges safe MCP server structure and non-redacted values only.
+
+## Manifest Limits
+
+The backend validates token hashes, manifest hashes, device identity, item counts, custom skill file size, and total manifest payload size before accepting a push.

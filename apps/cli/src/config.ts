@@ -15,6 +15,8 @@ export const STATE_PATH = join(CONFIG_DIR, "state.json");
 export const DEFAULT_DEBOUNCE_MS = 20_000;
 export const DEFAULT_POLL_MS = 60_000;
 export const CCSYNC_VERSION = "0.1.0";
+export const DEFAULT_CONVEX_URL = "https://nautical-shrimp-417.convex.cloud";
+export const DEFAULT_SITE_URL = "https://cc-sync.dev";
 
 export async function loadConfig(): Promise<CcSyncConfig> {
   const existing = await readJson<Partial<CcSyncConfig>>(CONFIG_PATH);
@@ -26,8 +28,12 @@ export async function loadConfig(): Promise<CcSyncConfig> {
     paused: existing?.paused ?? false,
     debounceMs: existing?.debounceMs ?? DEFAULT_DEBOUNCE_MS,
     pollMs: existing?.pollMs ?? DEFAULT_POLL_MS,
-    convexUrl: existing?.convexUrl ?? process.env.CCSYNC_CONVEX_URL ?? process.env.VITE_CONVEX_URL,
-    siteUrl: existing?.siteUrl ?? process.env.CCSYNC_SITE_URL,
+    convexUrl:
+      existing?.convexUrl ??
+      process.env.CCSYNC_CONVEX_URL ??
+      process.env.VITE_CONVEX_URL ??
+      DEFAULT_CONVEX_URL,
+    siteUrl: existing?.siteUrl ?? process.env.CCSYNC_SITE_URL ?? DEFAULT_SITE_URL,
     tokenHash:
       existing?.tokenHash ??
       (process.env.CCSYNC_TOKEN ? hashToken(process.env.CCSYNC_TOKEN) : undefined),
@@ -69,8 +75,8 @@ export function tokenPrefix(token: string | undefined): string | undefined {
 export async function promptForConfig(existing: CcSyncConfig): Promise<CcSyncConfig> {
   const rl = createInterface({ input, output });
   try {
-    const convexUrl = await rl.question(`Convex URL [${existing.convexUrl ?? "required"}]: `);
-    const siteUrl = await rl.question(`Web account URL [${existing.siteUrl ?? "optional"}]: `);
+    const convexUrl = await rl.question(`Convex URL [${existing.convexUrl}]: `);
+    const siteUrl = await rl.question(`Web account URL [${existing.siteUrl}]: `);
     const deviceLabel = await rl.question(`Device label [${existing.deviceLabel}]: `);
     const rawToken = await rl.question("CLI token from the ccsync web account page: ");
     const next: CcSyncConfig = {

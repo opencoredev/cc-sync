@@ -4,6 +4,34 @@ ccsync is a Bun CLI, daemon, OpenTUI console, and Convex backend for syncing AI 
 
 The default model is simple: sign in once with GitHub, create a CLI token, run `ccsync init` on each machine, then leave `ccsync daemon start` running.
 
+## Quick Start
+
+Install from Homebrew:
+
+```bash
+brew tap opencoredev/cc-sync https://github.com/opencoredev/cc-sync
+brew install --HEAD opencoredev/cc-sync/ccsync
+```
+
+Open the account page, sign in with GitHub, and create a CLI token:
+
+```txt
+https://cc-sync.dev
+```
+
+Then connect the machine:
+
+```bash
+ccsync init
+ccsync daemon start
+```
+
+Full docs:
+
+```txt
+https://cc-sync.dev/docs
+```
+
 ## What Syncs
 
 - Registry skill references by agent/name/ID.
@@ -26,13 +54,13 @@ packages/backend/convex  Convex schema, Better Auth integration, sync functions
 packages/ui              Shared shadcn primitives for the web account page
 ```
 
-## Install
+## Local Development
 
 ```bash
 bun install
 ```
 
-Build the CLI binary:
+Build the CLI binary locally:
 
 ```bash
 bun run cli:build
@@ -90,7 +118,7 @@ ccsync push
 ccsync pull
 ```
 
-`ccsync init` stores local config at `~/.config/ccsync/config.json` with mode `0600`. The raw CLI token is not stored; the CLI stores its SHA-256 hash, which acts as the daemon credential.
+`ccsync init` stores local config at `~/.config/ccsync/config.json` with mode `0600`. The hosted Convex backend and web account URL are the defaults. The raw CLI token is not stored; the CLI stores its SHA-256 hash, which acts as the daemon credential.
 
 ## Custom Skills
 

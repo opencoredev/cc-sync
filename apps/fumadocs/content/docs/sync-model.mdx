@@ -1,0 +1,41 @@
+---
+title: Sync Model
+description: What ccsync scans, stores, and applies across machines.
+icon: RefreshCw
+---
+
+ccsync syncs user-level agent setup. It does not sync project-level configuration.
+
+## Synced Surfaces
+
+| Surface         | Behavior                                                             |
+| --------------- | -------------------------------------------------------------------- |
+| Registry skills | Stored as lightweight references by agent and skill id.              |
+| Custom skills   | File contents sync only when a skill is explicitly marked custom.    |
+| MCP servers     | Known global/user-level config files are merged per agent.           |
+| Devices         | Each machine registers presence, platform, version, and sync status. |
+| Manifests       | The latest account manifest stores the current sync state.           |
+
+## Supported Agents
+
+The scanner is adapter-based and currently checks:
+
+- Claude Code
+- Cursor
+- Codex CLI
+- OpenCode
+- Windsurf
+- Cline
+- Roo Code
+- Continue
+- Aider
+- Gemini CLI
+- Qwen Code
+- Amp
+- Kiro
+
+## Conflict Behavior
+
+The current MVP uses latest-push-wins conflict handling. If two devices change the same synced surface, the newest pushed manifest becomes the account state.
+
+Use `ccsync status` before major changes when multiple machines are active.
