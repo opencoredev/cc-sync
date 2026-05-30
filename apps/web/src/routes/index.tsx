@@ -5,12 +5,11 @@ import {
   Copy,
   Download,
   KeyRound,
-  Monitor,
   Terminal,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { api } from "@cc-sync/backend/convex/_generated/api";
 import { Button } from "@cc-sync/ui/components/button";
@@ -20,8 +19,7 @@ import { useMutation, useQuery } from "convex/react";
 
 import { authClient } from "@/lib/auth-client";
 
-const HOMEBREW_INSTALL_COMMAND = `brew tap opencoredev/cc-sync https://github.com/opencoredev/cc-sync
-brew install --HEAD opencoredev/cc-sync/ccsync`;
+const HOMEBREW_INSTALL_COMMAND = "brew install --HEAD opencoredev/cc-sync/ccsync";
 const START_COMMANDS = `ccsync init
 ccsync daemon start`;
 
@@ -42,11 +40,7 @@ function HomeComponent() {
   const [copied, setCopied] = useState(false);
   const [copiedCommand, setCopiedCommand] = useState<"install" | "start" | null>(null);
   const issueCliToken = useMutation(api.sync.issueCliToken);
-  const tokens = useQuery(api.sync.listCliTokens, session.data ? {} : "skip");
-  const devices = useQuery(api.sync.listDevices, session.data ? {} : "skip");
   const providers = useQuery(api.auth.getAvailableProviders);
-  const tokenCount = tokens?.filter((token) => !token.revokedAt).length ?? 0;
-  const deviceCount = devices?.length ?? 0;
 
   async function signIn(provider: "github" | "vercel") {
     await authClient.signIn.social({
@@ -90,7 +84,6 @@ function HomeComponent() {
             <SignedInPanel
               copiedCommand={copiedCommand}
               copied={copied}
-              deviceCount={deviceCount}
               issuedToken={issuedToken}
               label={label}
               setLabel={setLabel}
@@ -98,7 +91,6 @@ function HomeComponent() {
               createToken={createToken}
               copyToken={copyToken}
               copyCommand={copyCommand}
-              tokenCount={tokenCount}
               userLabel={session.data.user.name ?? session.data.user.email ?? "Signed in"}
             />
           ) : (
@@ -182,12 +174,10 @@ function SignedInPanel({
   createToken,
   copyCommand,
   copyToken,
-  deviceCount,
   issuedToken,
   label,
   setLabel,
   signOut,
-  tokenCount,
   userLabel,
 }: {
   copied: boolean;
@@ -195,56 +185,44 @@ function SignedInPanel({
   createToken: () => Promise<void>;
   copyCommand: (value: string, key: "install" | "start") => Promise<void>;
   copyToken: () => Promise<void>;
-  deviceCount: number;
   issuedToken: string | null;
   label: string;
   setLabel: (label: string) => void;
   signOut: () => Promise<void>;
-  tokenCount: number;
   userLabel: string;
 }) {
   return (
-    <div className="space-y-5 px-5 py-5 sm:px-6">
-      <div className="flex items-start justify-between gap-4 border-b pb-4">
-        <div>
-          <p className="text-xs text-muted-foreground">Dashboard</p>
-          <h1 className="mt-1 text-xl font-semibold tracking-normal">ccsync</h1>
+    <div className="space-y-4 px-5 py-5 sm:px-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 space-y-1">
+          <h1 className="text-xl font-semibold tracking-normal">Set up ccsync</h1>
+          <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
+            <UserRound className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="truncate">{userLabel}</span>
+          </div>
         </div>
         <Button className="rounded-md" variant="ghost" size="sm" onClick={signOut}>
           Sign out
         </Button>
       </div>
 
-      <div className="cc-account-row flex items-center gap-3 rounded-md border bg-background px-3 py-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md border bg-card">
-          <UserRound className="h-4 w-4" aria-hidden="true" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs text-muted-foreground">Signed in as</p>
-          <p className="truncate text-sm font-medium">{userLabel}</p>
-        </div>
-      </div>
+      <div className="cc-setup-list divide-y rounded-md border bg-background">
+        <SetupSection>
+          <CommandBlock
+            command={HOMEBREW_INSTALL_COMMAND}
+            copied={copiedCommand === "install"}
+            icon={Download}
+            label="Install"
+            onCopy={() => copyCommand(HOMEBREW_INSTALL_COMMAND, "install")}
+          />
+        </SetupSection>
 
-      <div className="cc-status-strip grid grid-cols-2 divide-x rounded-md border bg-background text-sm">
-        <StatusMetric icon={Monitor} label="Devices" value={deviceCount} />
-        <StatusMetric icon={KeyRound} label="Tokens" value={tokenCount} />
-      </div>
-
-      <div className="space-y-3">
-        <CommandBlock
-          command={HOMEBREW_INSTALL_COMMAND}
-          copied={copiedCommand === "install"}
-          icon={Download}
-          label="Install with Homebrew"
-          onCopy={() => copyCommand(HOMEBREW_INSTALL_COMMAND, "install")}
-        />
-
-        <div className="rounded-md border bg-background p-3">
+        <SetupSection>
           <div className="mb-2 flex items-center justify-between gap-3">
             <Label className="text-sm font-medium" htmlFor="token-label">
-              Device label
+              Create CLI token
             </Label>
-            <span className="text-xs text-muted-foreground">For this token</span>
+            <span className="text-xs text-muted-foreground">Paste into init</span>
           </div>
           <Input
             className="h-9 rounded-md bg-card text-sm"
@@ -255,61 +233,36 @@ function SignedInPanel({
           <Button className="mt-3 h-10 w-full rounded-md text-sm" onClick={createToken}>
             Create CLI token
           </Button>
-        </div>
+
+          {issuedToken ? (
+            <div className="mt-3 rounded-md border bg-card">
+              <div className="flex items-center justify-between border-b px-3 py-2 text-sm">
+                <span className="font-medium">CLI token</span>
+                <CopyButton copied={copied} onClick={copyToken} />
+              </div>
+              <div className="break-all px-3 py-3 font-mono text-xs leading-6 text-muted-foreground">
+                {issuedToken}
+              </div>
+            </div>
+          ) : null}
+        </SetupSection>
+
+        <SetupSection>
+          <CommandBlock
+            command={START_COMMANDS}
+            copied={copiedCommand === "start"}
+            icon={Terminal}
+            label="Run after install"
+            onCopy={() => copyCommand(START_COMMANDS, "start")}
+          />
+        </SetupSection>
       </div>
-
-      {issuedToken ? (
-        <div className="rounded-md border bg-background">
-          <div className="flex items-center justify-between border-b px-3 py-2 text-sm">
-            <span className="font-medium">New token</span>
-            <button
-              className="cc-copy inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-              type="button"
-              onClick={copyToken}
-            >
-              {copied ? (
-                <Check className="h-3.5 w-3.5" aria-hidden="true" />
-              ) : (
-                <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-              )}
-              {copied ? "Copied" : "Copy"}
-            </button>
-          </div>
-          <div className="break-all p-3 font-mono text-xs leading-6 text-muted-foreground">
-            {issuedToken}
-          </div>
-        </div>
-      ) : null}
-
-      <CommandBlock
-        command={START_COMMANDS}
-        copied={copiedCommand === "start"}
-        icon={Terminal}
-        label="Start syncing"
-        onCopy={() => copyCommand(START_COMMANDS, "start")}
-      />
     </div>
   );
 }
 
-function StatusMetric({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="p-3">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Icon className="h-4 w-4" aria-hidden="true" />
-        <span>{label}</span>
-      </div>
-      <div className="mt-2 text-2xl font-semibold">{value}</div>
-    </div>
-  );
+function SetupSection({ children }: { children: ReactNode }) {
+  return <div className="p-3">{children}</div>;
 }
 
 function CommandBlock({
@@ -326,29 +279,35 @@ function CommandBlock({
   onCopy: () => void;
 }) {
   return (
-    <div className="rounded-md border bg-background">
-      <div className="flex items-center justify-between gap-3 border-b px-3 py-2 text-sm">
+    <div>
+      <div className="mb-2 flex items-center justify-between gap-3 text-sm">
         <div className="flex items-center gap-2 font-medium">
           <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           {label}
         </div>
-        <button
-          className="cc-copy inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-          type="button"
-          onClick={onCopy}
-        >
-          {copied ? (
-            <Check className="h-3.5 w-3.5" aria-hidden="true" />
-          ) : (
-            <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-          )}
-          {copied ? "Copied" : "Copy"}
-        </button>
+        <CopyButton copied={copied} onClick={onCopy} />
       </div>
-      <pre className="overflow-x-auto px-3 py-3 font-mono text-xs leading-6 text-muted-foreground">
+      <pre className="cc-command-line overflow-x-auto rounded-md border bg-card px-3 py-3 font-mono text-xs leading-6 text-muted-foreground">
         <code>{command}</code>
       </pre>
     </div>
+  );
+}
+
+function CopyButton({ copied, onClick }: { copied: boolean; onClick: () => void }) {
+  return (
+    <button
+      className="cc-copy inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+      type="button"
+      onClick={onClick}
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5" aria-hidden="true" />
+      ) : (
+        <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+      )}
+      {copied ? "Copied" : "Copy"}
+    </button>
   );
 }
 

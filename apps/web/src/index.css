@@ -130,9 +130,12 @@
   border-color: color-mix(in oklch, var(--destructive) 28%, var(--border));
 }
 
-.cc-account-row,
-.cc-status-strip {
+.cc-setup-list {
   box-shadow: 0 1px 0 color-mix(in oklch, white 32%, transparent) inset;
+}
+
+.cc-command-line {
+  white-space: pre-wrap;
 }
 
 pre {
