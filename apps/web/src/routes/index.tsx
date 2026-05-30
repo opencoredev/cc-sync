@@ -104,7 +104,7 @@ function HomeComponent() {
           ) : (
             <SignedOutPanel
               authError={formatAuthError(search.error ?? search.error_description)}
-              providers={providers ?? { github: false, vercel: false }}
+              providers={providers ?? { github: true, vercel: false }}
               signIn={signIn}
             />
           )}
